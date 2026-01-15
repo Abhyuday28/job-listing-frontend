@@ -1,16 +1,118 @@
-# React + Vite
+Job Listing Web Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack job listing web application that allows users to browse jobs, filter by location, and view detailed job information with real apply links.
 
-Currently, two official plugins are available:
+🔗 Live Demo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Frontend (Vercel):
+👉 https://job-listing-frontend-green-eight.vercel.app/
 
-## React Compiler
+Backend API (Railway):
+👉 https://job-listing-backend-production-234d.up.railway.app/api
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+📦 GitHub Repositories
 
-## Expanding the ESLint configuration
+Frontend: https://github.com/Abhyuday28/job-listing-frontend
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Backend: https://github.com/Abhyuday28/job-listing-backend
+
+✨ Features
+
+Job listing with master–detail layout
+
+Location-based job search (server-side filtering)
+
+Job detail view with:
+
+Clean, minimalist UI
+
+REST API powered by MongoDB Atlas
+
+Fully deployed backend & frontend
+
+🛠️ Tech Stack
+Frontend
+React (Vite)
+Tailwind CSS
+Axios
+lucide-react (icons)
+Backend
+Node.js
+Express.js
+MongoDB Atlas
+Mongoose
+Deployment
+
+Backend: Railway
+Frontend: Vercel
+
+⚙️ Running Locally
+1️⃣ Clone repositories
+git clone https://github.com/Abhyuday28/job-listing-backend
+git clone https://github.com/Abhyuday28/job-listing-frontend
+
+2️⃣ Backend setup
+cd job-listing-backend
+npm install
+
+
+Create .env file:
+
+PORT=5000
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/jobDB
+
+
+Seed the database:
+node seed.js
+
+Run backend:
+npm run dev
+
+
+Backend will run on:
+http://localhost:5000
+
+3️⃣ Frontend setup
+cd job-listing-frontend
+npm install
+npm run dev
+
+
+Frontend will run on:
+http://localhost:5173
+
+🔍 API Endpoints
+Get all jobs
+GET /api/jobs
+
+Filter jobs by location
+GET /api/jobs?location=Delhi
+
+🧠 Implementation Notes
+
+Backend performs server-side filtering using MongoDB regex search.
+
+Location search is debounced and protected from race conditions.
+
+All job links and company URLs are sourced directly from the provided dataset.
+
+No dummy data or hardcoded values used.
+
+📌 Assumptions & Trade-offs
+
+Authentication was intentionally excluded as it was not part of the task scope.
+
+UI focuses on clarity and usability rather than heavy animations.
+
+Search is location-based only, as specified in the task.
+
+✅ Status
+
+✔ Task requirements completed
+✔ Backend & frontend deployed
+✔ Tested end-to-end
+
+👤 Author
+
+Abhyuday
+Frontend Developer
