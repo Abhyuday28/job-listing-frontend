@@ -8,10 +8,10 @@ function App() {
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [searchLocation, setSearchLocation] = useState("");
+  const [loading, setLoading] = useState(true);
   const controllerRef = useRef(null);
 
   useEffect(() => {
-    
     if (controllerRef.current) {
       controllerRef.current.abort();
     }
@@ -20,6 +20,7 @@ function App() {
     controllerRef.current = controller;
 
     const loadJobs = async () => {
+      setLoading(true);
       try {
         const res = await fetchJobs(searchLocation, controller.signal);
         setJobs(res.data);
@@ -28,6 +29,8 @@ function App() {
         if (err.name !== "CanceledError") {
           console.error("Fetch error:", err);
         }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -39,18 +42,26 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto bg-white shadow rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">Job<span className="text-blue-500">Listings</span></h1>
+        <h1 className="text-2xl font-bold mb-4">
+          Job<span className="text-blue-500">Listings</span>
+        </h1>
 
         <SearchBar onSearch={setSearchLocation} />
 
-        <div className="flex h-[75vh] border rounded overflow-hidden w-full">
-          <JobList
-            jobs={jobs}
-            selectedId={selectedJob?._id}
-            onSelect={setSelectedJob}
-          />
-          <JobDetails job={selectedJob} />
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center h-[75vh] text-gray-500 text-lg">
+            Loading jobs…
+          </div>
+        ) : (
+          <div className="flex h-[75vh] border rounded overflow-hidden w-full">
+            <JobList
+              jobs={jobs}
+              selectedId={selectedJob?._id}
+              onSelect={setSelectedJob}
+            />
+            <JobDetails job={selectedJob} />
+          </div>
+        )}
       </div>
     </div>
   );
