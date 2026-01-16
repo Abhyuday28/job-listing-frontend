@@ -39,7 +39,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto bg-white shadow rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">Job<span classname="text-blue-500">Listings</span></h1>
+        <h1 className="text-2xl font-bold mb-4">Job<span className="text-blue-500">Listings</span></h1>
 
         <SearchBar onSearch={setSearchLocation} />
 
