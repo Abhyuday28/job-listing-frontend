@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense, lazy } from "react";
 import { fetchJobs } from "./services/api";
 import SearchBar from "./components/SearchBar";
 import JobList from "./components/JobList";
-import { Suspense, lazy } from "react";
 
 const JobDetails = lazy(() => import("./components/JobDetails"));
 
@@ -12,27 +11,34 @@ function App() {
   const [searchLocation, setSearchLocation] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const controllerRef = useRef(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
+  const controllerRef = useRef(null);
+  const loadMoreRef = useRef(null);
+  const listContainerRef = useRef(null);
+
+  
   useEffect(() => {
-    
-    if (controllerRef.current && !controllerRef.current.signal.aborted) {
+    if (controllerRef.current) {
       controllerRef.current.abort();
     }
 
     const controller = new AbortController();
     controllerRef.current = controller;
 
-    const loadJobs = async () => {
+    const loadInitialJobs = async () => {
       setLoading(true);
       try {
-        const res = await fetchJobs(searchLocation, controller.signal);
+        const res = await fetchJobs(searchLocation, controller.signal, {
+          page: 1,
+          limit: 15,
+        });
 
-       
-        const limitedJobs = res.data.slice(0, 15);
-
-        setJobs(limitedJobs);
-        setSelectedJob(limitedJobs[0] || null);
+        setJobs(res.data);
+        setSelectedJob(res.data[0] || null);
+        setHasMore(res.data.length === 15);
+        setPage(1);
       } catch (err) {
         if (err.name !== "CanceledError") {
           console.error("Fetch error:", err);
@@ -42,10 +48,64 @@ function App() {
       }
     };
 
-    loadJobs();
+    loadInitialJobs();
 
     return () => controller.abort();
   }, [searchLocation]);
+
+  
+  const loadMoreJobs = async () => {
+    if (loading || !hasMore) return;
+
+    const nextPage = page + 1;
+    setLoading(true);
+
+    try {
+      const res = await fetchJobs(
+        searchLocation,
+        controllerRef.current.signal,
+        { page: nextPage, limit: 15 }
+      );
+
+      if (res.data.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      setJobs(prev => [...prev, ...res.data]);
+      setPage(nextPage);
+    } catch (err) {
+      if (err.name !== "CanceledError") {
+        console.error("Load more error:", err);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+  useEffect(() => {
+    if (!hasMore || loading) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          loadMoreJobs();
+        }
+      },
+      {
+        root: listContainerRef.current, 
+        rootMargin: "100px",
+        threshold: 0.1,
+      }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, loading, page]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -57,13 +117,29 @@ function App() {
         <SearchBar onSearch={setSearchLocation} />
 
         <div className="flex h-[75vh] border rounded overflow-hidden w-full">
-          <JobList
-            jobs={jobs}
-            selectedId={selectedJob?._id}
-            onSelect={setSelectedJob}
-            loading={loading}
-          />
+          
+          <div
+            ref={listContainerRef}
+            className="w-1/3 overflow-y-auto border-r"
+          >
+            <JobList
+              jobs={jobs}
+              selectedId={selectedJob?._id}
+              onSelect={setSelectedJob}
+              loading={loading}
+            />
 
+
+            <div ref={loadMoreRef} className="h-1" />
+
+            {loading && (
+              <div className="py-2 text-center text-sm text-gray-400">
+                Loading more jobs…
+              </div>
+            )}
+          </div>
+
+          
           <Suspense
             fallback={
               <div className="w-2/3 flex items-center justify-center text-gray-400">
