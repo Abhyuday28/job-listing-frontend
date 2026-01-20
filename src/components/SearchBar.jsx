@@ -20,7 +20,7 @@ const SearchBar = ({ onSearch }) => {
       type="text"
       value={value}
       placeholder="Search jobs by location..."
-      className="w-full mb-4 px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="w-full mb-4 px-4 py-3 border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
       onChange={(e) => setValue(e.target.value)}
     />
   );
