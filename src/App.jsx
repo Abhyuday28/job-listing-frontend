@@ -2,17 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import { fetchJobs } from "./services/api";
 import SearchBar from "./components/SearchBar";
 import JobList from "./components/JobList";
-import JobDetails from "./components/JobDetails";
+import { Suspense, lazy } from "react";
+
+const JobDetails = lazy(() => import("./components/JobDetails"));
 
 function App() {
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [searchLocation, setSearchLocation] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
   const controllerRef = useRef(null);
 
   useEffect(() => {
-    if (controllerRef.current) {
+    
+    if (controllerRef.current && !controllerRef.current.signal.aborted) {
       controllerRef.current.abort();
     }
 
@@ -23,8 +27,12 @@ function App() {
       setLoading(true);
       try {
         const res = await fetchJobs(searchLocation, controller.signal);
-        setJobs(res.data);
-        setSelectedJob(res.data[0] || null);
+
+       
+        const limitedJobs = res.data.slice(0, 15);
+
+        setJobs(limitedJobs);
+        setSelectedJob(limitedJobs[0] || null);
       } catch (err) {
         if (err.name !== "CanceledError") {
           console.error("Fetch error:", err);
@@ -48,20 +56,24 @@ function App() {
 
         <SearchBar onSearch={setSearchLocation} />
 
-        {loading ? (
-          <div className="flex items-center justify-center h-[75vh] text-gray-500 text-lg">
-            Loading jobs…
-          </div>
-        ) : (
-          <div className="flex h-[75vh] border rounded overflow-hidden w-full">
-            <JobList
-              jobs={jobs}
-              selectedId={selectedJob?._id}
-              onSelect={setSelectedJob}
-            />
-            <JobDetails job={selectedJob} />
-          </div>
-        )}
+        <div className="flex h-[75vh] border rounded overflow-hidden w-full">
+          <JobList
+            jobs={jobs}
+            selectedId={selectedJob?._id}
+            onSelect={setSelectedJob}
+            loading={loading}
+          />
+
+          <Suspense
+            fallback={
+              <div className="w-2/3 flex items-center justify-center text-gray-400">
+                Loading details…
+              </div>
+            }
+          >
+            {selectedJob && <JobDetails job={selectedJob} />}
+          </Suspense>
+        </div>
       </div>
     </div>
   );
